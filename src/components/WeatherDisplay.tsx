@@ -8,8 +8,15 @@ import {
   Eye, 
   Gauge,
   Sun,
-  Moon
+  Moon,
+  MapPin,
+  Globe,
+  Cloud,
+  CloudRain,
+  CloudSnow,
+  CloudLightning
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import WeatherChart from './WeatherChart';
 import AirQualityIndicator from './AirQualityIndicator';
 
@@ -24,92 +31,143 @@ const WeatherDisplay: React.FC<WeatherDisplayProps> = ({
   condition,
   airQuality 
 }) => {
-  const sunrise = new Date(data.sys.sunrise * 1000);
-  const sunset = new Date(data.sys.sunset * 1000);
+  const getWeatherIcon = () => {
+    switch (condition) {
+      case 'Clear':
+        return <Sun className="w-20 h-20 text-yellow-400" />;
+      case 'Clouds':
+        return <Cloud className="w-20 h-20 text-gray-400" />;
+      case 'Rain':
+      case 'Drizzle':
+        return <CloudRain className="w-20 h-20 text-blue-400" />;
+      case 'Snow':
+        return <CloudSnow className="w-20 h-20 text-white" />;
+      case 'Thunderstorm':
+        return <CloudLightning className="w-20 h-20 text-yellow-400" />;
+      default:
+        return <Cloud className="w-20 h-20 text-gray-400" />;
+    }
+  };
 
   return (
-    <div className="flex flex-col w-full max-w-md mx-auto space-y-6">
-      {/* Main Temperature Display */}
-      <div className="text-center">
-        <h1 className="text-7xl font-bold text-white mb-2">
-          {Math.round(data.main.temp)}°C
-        </h1>
-        <h2 className="text-2xl text-white/80">{data.name}</h2>
-        <p className="text-lg text-white/60 capitalize mt-1">
-          {data.weather[0].description}
-        </p>
-        <p className="text-white/60 mt-1">
-          Feels like {Math.round(data.main.feels_like)}°C
-        </p>
-      </div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="relative"
+    >
+      {/* Main Weather Card */}
+      <div className="backdrop-blur-md bg-white/10 rounded-3xl p-8 shadow-lg border border-white/20">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Left Column - Current Weather */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-2">
+              <MapPin className="text-white/80" />
+              <h2 className="text-2xl font-semibold text-white">{data.name}</h2>
+              {data.sys.country && (
+                <span className="text-white/60 text-sm">{data.sys.country}</span>
+              )}
+            </div>
 
-      {/* Weather Chart */}
-      <WeatherChart />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                {getWeatherIcon()}
+                <div>
+                  <div className="text-6xl font-bold text-white">
+                    {Math.round(data.main.temp)}°C
+                  </div>
+                  <div className="text-white/80 capitalize">{data.weather[0].description}</div>
+                </div>
+              </div>
+            </div>
 
-      {/* Detailed Metrics */}
-      <div className="grid grid-cols-2 gap-4">
-        <MetricCard
-          icon={<Thermometer className="text-blue-400" />}
-          value={`${data.main.humidity}%`}
-          label="Humidity"
-        />
-        <MetricCard
-          icon={<Wind className="text-green-400" />}
-          value={`${Math.round(data.wind.speed)} km/h`}
-          label="Wind Speed"
-        />
-        <MetricCard
-          icon={<Eye className="text-purple-400" />}
-          value={`${data.visibility / 1000} km`}
-          label="Visibility"
-        />
-        <MetricCard
-          icon={<Gauge className="text-red-400" />}
-          value={`${data.main.pressure} hPa`}
-          label="Pressure"
-        />
-      </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center gap-2 text-white/80">
+                <Thermometer className="w-5 h-5" />
+                <span>Feels like {Math.round(data.main.feels_like)}°C</span>
+              </div>
+              <div className="flex items-center gap-2 text-white/80">
+                <Droplets className="w-5 h-5" />
+                <span>Humidity {data.main.humidity}%</span>
+              </div>
+              <div className="flex items-center gap-2 text-white/80">
+                <Wind className="w-5 h-5" />
+                <span>Wind {Math.round(data.wind.speed)} m/s</span>
+              </div>
+              <div className="flex items-center gap-2 text-white/80">
+                <Eye className="w-5 h-5" />
+                <span>Visibility {(data.visibility / 1000).toFixed(1)} km</span>
+              </div>
+            </div>
 
-      {/* Air Quality */}
-      <AirQualityIndicator airQuality={airQuality} />
+            <div className="flex items-center gap-4 text-white/80">
+              <div className="flex items-center gap-2">
+                <Sun className="w-5 h-5" />
+                <span>Rise {format(new Date(data.sys.sunrise * 1000), 'HH:mm')}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Moon className="w-5 h-5" />
+                <span>Set {format(new Date(data.sys.sunset * 1000), 'HH:mm')}</span>
+              </div>
+            </div>
+          </div>
 
-      {/* Sunrise/Sunset */}
-      <div className="flex justify-between items-center bg-white/5 rounded-xl p-4">
-        <div className="flex items-center space-x-3">
-          <Sun className="text-yellow-400" />
-          <div>
-            <p className="text-white/60 text-sm">Sunrise</p>
-            <p className="text-white font-medium">
-              {format(sunrise, 'HH:mm')}
-            </p>
+          {/* Right Column - Air Quality */}
+          <div className="space-y-6">
+            <div className="backdrop-blur-md bg-white/5 rounded-2xl p-6">
+              <h3 className="text-xl font-semibold text-white mb-4">Air Quality</h3>
+              <AirQualityIndicator airQuality={airQuality} />
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                <div className="flex items-center gap-2 text-white/80">
+                  <Gauge className="w-5 h-5" />
+                  <span>AQI: {airQuality.aqi}</span>
+                </div>
+                <div className="flex items-center gap-2 text-white/80">
+                  <Globe className="w-5 h-5" />
+                  <span>PM2.5: {airQuality.pm2_5}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Weather Chart */}
+            <div className="backdrop-blur-md bg-white/5 rounded-2xl p-6">
+              <h3 className="text-xl font-semibold text-white mb-4">Temperature Trend</h3>
+              <WeatherChart data={data} />
+            </div>
           </div>
         </div>
-        <div className="flex items-center space-x-3">
-          <Moon className="text-blue-400" />
-          <div>
-            <p className="text-white/60 text-sm">Sunset</p>
-            <p className="text-white font-medium">
-              {format(sunset, 'HH:mm')}
-            </p>
-          </div>
-        </div>
       </div>
-    </div>
+
+      {/* Floating Weather Elements */}
+      <motion.div 
+        className="absolute inset-0 pointer-events-none"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3 }}
+      >
+        {condition === 'Clouds' && (
+          <div className="clouds-overlay">
+            {[...Array(3)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="cloud-element"
+                initial={{ x: -100, opacity: 0 }}
+                animate={{ 
+                  x: [null, 1000],
+                  opacity: [0, 1, 1, 0]
+                }}
+                transition={{
+                  duration: 20 + i * 5,
+                  repeat: Infinity,
+                  delay: i * 3
+                }}
+              />
+            ))}
+          </div>
+        )}
+      </motion.div>
+    </motion.div>
   );
 };
-
-const MetricCard: React.FC<{
-  icon: React.ReactNode;
-  value: string;
-  label: string;
-}> = ({ icon, value, label }) => (
-  <div className="flex items-center space-x-3 bg-white/5 rounded-xl p-4">
-    {icon}
-    <div>
-      <p className="text-white font-medium">{value}</p>
-      <p className="text-white/60 text-sm">{label}</p>
-    </div>
-  </div>
-);
 
 export default WeatherDisplay;

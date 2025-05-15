@@ -36,25 +36,27 @@ export const useWeather = () => {
   const getWeatherData = async (city: string) => {
     if (!city.trim()) return;
     
-    setWeatherState({
-      data: null,
+    setWeatherState(prev => ({
+      ...prev,
       loading: true,
       error: null
-    });
+    }));
 
     try {
       const data = await fetchWeatherData(city);
+      console.log('Weather data received:', data);
       setWeatherState({
         data,
         loading: false,
         error: null
       });
     } catch (error) {
-      setWeatherState({
-        data: null,
+      console.error('Error in useWeather:', error);
+      setWeatherState(prev => ({
+        ...prev,
         loading: false,
-        error: error instanceof Error ? error.message : "An error occurred"
-      });
+        error: error instanceof Error ? error.message : 'Failed to fetch weather data'
+      }));
     }
   };
 
@@ -63,8 +65,6 @@ export const useWeather = () => {
     loading: weatherState.loading,
     error: weatherState.error,
     getWeatherData,
-    getWeatherCondition: weatherState.data 
-      ? getWeatherCondition(weatherState.data.weather[0].main) 
-      : 'Default'
+    getWeatherCondition
   };
 };

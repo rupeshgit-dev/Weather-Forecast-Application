@@ -1,0 +1,76 @@
+/* Weather Display Styles */
+.cloud-element {
+  position: absolute;
+  width: 200px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50px;
+  filter: blur(3px);
+}
+
+.cloud-element::before,
+.cloud-element::after {
+  content: '';
+  position: absolute;
+  background: inherit;
+  border-radius: 50%;
+}
+
+.cloud-element::before {
+  width: 80px;
+  height: 80px;
+  top: -40px;
+  left: 40px;
+}
+
+.cloud-element::after {
+  width: 100px;
+  height: 100px;
+  top: -50px;
+  left: 100px;
+}
+
+.clouds-overlay {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Glassmorphism Effects */
+.weather-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+.weather-metric {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Weather Icons */
+.weather-icon {
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+}
+
+/* Temperature Display */
+.temperature {
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.floating {
+  animation: float 3s ease-in-out infinite;
+}
